@@ -165,7 +165,7 @@
     <link href="http://yoursite.com/2017/07/18/vue-plugin/"/>
     <id>http://yoursite.com/2017/07/18/vue-plugin/</id>
     <published>2017-07-18T11:57:23.000Z</published>
-    <updated>2017-07-18T06:00:29.764Z</updated>
+    <updated>2017-08-14T02:10:17.684Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>简介部分的内容大部分摘自 <a href="https://cn.vuejs.org/v2/guide/plugins.html" target="_blank" rel="external">Vue.js中文网</a>，因为我觉得官网的介绍十分精简，可以跳过以下的简介部分直接去官网查看。</p>
 <h3 id="1-1-开发插件"><a href="#1-1-开发插件" class="headerlink" title="1.1 开发插件"></a>1.1 开发插件</h3><p>vue-plugin 属于 Vue 的插件范畴，通常会为 Vue  添加全局功能。插件的开发方式官网上提出一般为以下几种:</p>
@@ -284,6 +284,7 @@
 <p>可以看到 vue-rouer 在 Vue.prototype 上面添加了自定义的对象，这只是其中能够体现 vue-router 扩展插件的一小部分，vue-rouer 用到了文章上部分讲的开发插件的各种方式。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要是简单介绍了关于 Vue 插件的基本概念以及其实现的几种形式，内容大部分摘自 <a href="https://cn.vuejs.org/v2/guide/" target="_blank" rel="external">Vue.js 中文网</a>。</p>
 <p>关于插件的理解，个人觉得主要是从实践中去进行理解，因此，本文主要是做概念上的简单介绍。<br>学习时写了个很小的 <a href="https://github.com/Silencewanghui/vue-plugin-demo" target="_blank" rel="external">demo</a> 作为练习。</p>
+<p><img src="https://silencewanghui.github.io/images/WX.jpg" alt="微信赞赏"></p>
 ]]></content>
     
     <summary type="html">
