@@ -47,22 +47,22 @@
   };
 </script>
 
-  <meta name="description" content="Linux 系统下的 Node 开发环境配置。                                                       我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。">
+  <meta name="description" content="1. 部署环境我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。 之前部署过几次，都是在网络上东找找西找找的配置文章，本身对于服务器相关的知识一窍不通，因此配置完了也就忘了。最近刚在这台新服务器上部署了 Node 的运行环境，借此记">
 <meta name="keywords" content="Node.js">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Node.js 项目服务端部署">
 <meta property="og:url" content="http://silencewh.xin/2017/07/20/Node.js 项目服务端部署/index.html">
 <meta property="og:site_name" content="但行好事，莫问前程">
-<meta property="og:description" content="Linux 系统下的 Node 开发环境配置。                                                       我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。">
+<meta property="og:description" content="1. 部署环境我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。 之前部署过几次，都是在网络上东找找西找找的配置文章，本身对于服务器相关的知识一窍不通，因此配置完了也就忘了。最近刚在这台新服务器上部署了 Node 的运行环境，借此记">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://silencewanghui.github.io/images/部署01.png">
 <meta property="og:image" content="https://silencewanghui.github.io/images/部署02.png">
 <meta property="og:image" content="https://silencewanghui.github.io/images/部署03.png">
 <meta property="og:image" content="https://silencewanghui.github.io/images/部署04.png">
-<meta property="og:updated_time" content="2019-11-27T10:12:26.957Z">
+<meta property="og:updated_time" content="2019-11-27T10:24:24.205Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Node.js 项目服务端部署">
-<meta name="twitter:description" content="Linux 系统下的 Node 开发环境配置。                                                       我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。">
+<meta name="twitter:description" content="1. 部署环境我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。 之前部署过几次，都是在网络上东找找西找找的配置文章，本身对于服务器相关的知识一窍不通，因此配置完了也就忘了。最近刚在这台新服务器上部署了 Node 的运行环境，借此记">
 <meta name="twitter:image" content="https://silencewanghui.github.io/images/部署01.png">
 
 <link rel="canonical" href="http://silencewh.xin/2017/07/20/Node.js 项目服务端部署/">
@@ -203,11 +203,10 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-11-27 10:12:26" itemprop="dateModified" datetime="2019-11-27T10:12:26Z">2019-11-27</time>
+                <time title="Modified: 2019-11-27 10:24:24" itemprop="dateModified" datetime="2019-11-27T10:24:24Z">2019-11-27</time>
               </span>
 
           
-            <div class="post-description">Linux 系统下的 Node 开发环境配置。                                                       我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。                                    之前部署过几次，都是在网络上东找找西找找的配置文章，本身对于服务器相关的知识一窍不通，因此配置完了也就忘了。最近刚在这台新服务器上部署了 Node 的运行环境，借此记录下步骤，以便日后查找，也给有需要的朋友一些参考价值。</div>
 
         </div>
       </header>
@@ -220,6 +219,7 @@
       
         <h2 id="1-部署环境"><a href="#1-部署环境" class="headerlink" title="1. 部署环境"></a>1. 部署环境</h2><p>我是在阿里云上买的专有网络的云服务器，配置是：CPU 1 核，内存 1GB，操作系统 CentOS 7.3 64 位，带宽 1Mbps。配置很低，因为便宜嘛，平时自己的一些小 demo 够了。以下的部署步骤基于此环境。</p>
 <p>之前部署过几次，都是在网络上东找找西找找的配置文章，本身对于服务器相关的知识一窍不通，因此配置完了也就忘了。最近刚在这台新服务器上部署了 Node 的运行环境，借此记录下步骤，以便日后查找，也给有需要的朋友一些参考价值。</p>
+<a id="more"></a>
 <h2 id="2-开始部署"><a href="#2-开始部署" class="headerlink" title="2. 开始部署"></a>2. 开始部署</h2><h3 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h3><p>我是在 Windows 下进行部署的，用的工具是 Xshell 5，下载地址在这：<a href="https://www.netsarang.com/download/down_xsh5.html" target="_blank" rel="noopener">https://www.netsarang.com/download/down_xsh5.html</a></p>
 <h3 id="开始部署"><a href="#开始部署" class="headerlink" title="开始部署"></a>开始部署</h3><p>在 Xshell 5 上输入服务器的 IP、密码和用户，登录成功后如下图所示：</p>
 <p><img src="https://silencewanghui.github.io/images/部署01.png" alt="部署01"></p>
