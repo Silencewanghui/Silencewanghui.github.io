@@ -47,14 +47,6 @@
   };
 </script>
 
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-WJC332K');</script>
-<!-- End Google Tag Manager -->
-
   <meta name="description" content="1.简介在 web 开发中，经常会对一些事件进行监听处理，从而达到我们需要的一些效果。但是某些事件触发特别频繁，如浏览器窗口的 resize 事件以及页面的滚动事件。如此频繁的事件监听以及处理函数的多次执行，势必会带来性能上不必要的损失和欠佳的用户体验。 因此，今天就初探一下类似问题的解决办法：防抖动（Debounce ）、节流阀（Throttle）和 requestAnimationFrame。">
 <meta name="keywords" content="JavaScript">
 <meta property="og:type" content="article">
@@ -84,6 +76,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <title>防抖动、节流阀与rAF | 但行好事，莫问前程</title>
   
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117879177-4"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-117879177-4');
+      }
+    </script>
 
 
 
@@ -377,11 +378,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a>
   </div>
-
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WJC332K"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 
         
 
