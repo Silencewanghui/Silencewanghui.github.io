@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.7.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="但行好事，莫问前程" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://silencewh.xin').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  浏览器架构变迁起初浏览器为单进程架构，页面、插件、网络等其他模块都在一个进程下面工作（多个线程），只要有一个线程出现问题，就会导致整个浏览器崩溃。这种架构不稳定、不安全、不流畅。如下图所示：">
+<meta name="keywords" content="学习笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器工作原理学习笔记(一)-浏览器概览">
+<meta property="og:url" content="http://silencewh.xin/2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/index.html">
+<meta property="og:site_name" content="但行好事，莫问前程">
+<meta property="og:description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  浏览器架构变迁起初浏览器为单进程架构，页面、插件、网络等其他模块都在一个进程下面工作（多个线程），只要有一个线程出现问题，就会导致整个浏览器崩溃。这种架构不稳定、不安全、不流畅。如下图所示：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://i2.tiimg.com/706472/df649e67d5a3094d.png">
+<meta property="og:image" content="http://i2.tiimg.com/706472/3deb725de2d333fa.png">
+<meta property="og:image" content="http://i2.tiimg.com/706472/19383820160b6f33.png">
+<meta property="og:image" content="http://i2.tiimg.com/706472/a72269e27885564d.png">
+<meta property="og:image" content="http://i2.tiimg.com/706472/d2877702697009e6.png">
+<meta property="og:image" content="http://i2.tiimg.com/706472/b1c45068aee33d99.png">
+<meta property="og:updated_time" content="2019-12-23T03:34:22.820Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器工作原理学习笔记(一)-浏览器概览">
+<meta name="twitter:description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  浏览器架构变迁起初浏览器为单进程架构，页面、插件、网络等其他模块都在一个进程下面工作（多个线程），只要有一个线程出现问题，就会导致整个浏览器崩溃。这种架构不稳定、不安全、不流畅。如下图所示：">
+<meta name="twitter:image" content="http://i2.tiimg.com/706472/df649e67d5a3094d.png">
+
+<link rel="canonical" href="http://silencewh.xin/2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>浏览器工作原理学习笔记(一)-浏览器概览 | 但行好事，莫问前程</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117879177-4"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-117879177-4');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">但行好事，莫问前程</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Web Developer</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://silencewh.xin/2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+      <meta itemprop="name" content="silence_wh">
+      <meta itemprop="description" content="代码还是要用心写的.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="但行好事，莫问前程">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          浏览器工作原理学习笔记(一)-浏览器概览
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-23 11:31:30" itemprop="dateCreated datePublished" datetime="2019-12-23T11:31:30Z">2019-12-23</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/#comments" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本系列为极客时间上的<a href="https://time.geekbang.org/column/intro/216" target="_blank" rel="noopener">《浏览器工作原理与实践》</a>专栏的学习笔记</p>
+</blockquote>
+<h2 id="浏览器架构变迁"><a href="#浏览器架构变迁" class="headerlink" title="浏览器架构变迁"></a>浏览器架构变迁</h2><p>起初浏览器为单进程架构，页面、插件、网络等其他模块都在一个进程下面工作（多个线程），只要有一个线程出现问题，就会导致整个浏览器崩溃。这种架构不稳定、不安全、不流畅。如下图所示：</p>
+<a id="more"></a>
+<p><img src="http://i2.tiimg.com/706472/df649e67d5a3094d.png" alt="Markdown"></p>
+<p>后面架构升级为多进程架构，分为渲染进程、插件进程、网络进程、GPU 进程和浏览器主进程。每个页面和插件都有自己单独的进程，保证了独立性，互不影响，单个页面或者插件出问题之后，不会影响到整个浏览器，将其关闭就好。而且渲染进程被隔离在沙箱内，保证了系统的安全性。如下图所示：</p>
+<p><img src="http://i2.tiimg.com/706472/3deb725de2d333fa.png" alt="Markdown"></p>
+<p>未来浏览器的架构方向是面向服务的架构，也就是将浏览器的底层能力划分为一个个基础服务，每个服务在独立的进程内运行，互相通过 IPC 通信。构建一个更内聚、低耦合、易于扩展和维护的系统。如下图所示：</p>
+<p><img src="http://i2.tiimg.com/706472/19383820160b6f33.png" alt="Markdown"></p>
+<h2 id="浏览器数据包传输"><a href="#浏览器数据包传输" class="headerlink" title="浏览器数据包传输"></a>浏览器数据包传输</h2><p>互联网的数据是通过数据包来传输的。如果发送的的数据过大，会拆分成一个个小的数据包进行传输，浏览器的网络传输是基于 TCP/IP 协议簇进行。</p>
+<p>IP 协议位于网络层，主要的职责是将数据从一个主机地址传输到另一个主机地址，这里的主机地址就是指的 IP。传输方式是在基础数据包的基础上加上 IP 头信息，里面包含了源 IP 地址、目标 IP 地址等信息。</p>
+<p>UDP （用户数据包协议），负责将应用程序通过端口号与网络数据包连接起来。IP 接收到数据包之后，UDP 通过端口号将数据包分发给对应的应用程序。UDP 的特点是：传输速度快，但是不保证传输可靠性（会丢包）。</p>
+<p>TCP 协议是一个可靠、稳定、面向连接的传输层协议，它解决了 UDP 的缺点，特点如下：</p>
+<ul>
+<li><p>提供重传机制，解决丢包的问题</p>
+</li>
+<li><p>大的数据包会拆分成若干个小数据包，接收端收到之后再按照序号拼接</p>
+</li>
+</ul>
+<p>一个完整的 TCP 生命周期包括：建立连接（三次握手）、数据传输、断开连接（四次挥手）</p>
+<h3 id="一个完整的-HTTP-请求过程"><a href="#一个完整的-HTTP-请求过程" class="headerlink" title="一个完整的 HTTP 请求过程"></a>一个完整的 HTTP 请求过程</h3><ol>
+<li>构建请求<ul>
+<li>构建请求行信息</li>
+</ul>
+</li>
+<li>查找缓存<ul>
+<li>页面数据本地缓存</li>
+<li>缓存对应头字段：Cache-Control，不同的值带来不同的缓存生命周期</li>
+</ul>
+</li>
+<li>准备 IP 地址和端口<ul>
+<li>IP 地址通过 DNS 查询获取，并且会优先查找本地的 DNS 缓存</li>
+</ul>
+</li>
+<li>等待 TCP 队列<ul>
+<li>Chrome 对于每个域名只能分配 6 个 TCP 连接</li>
+</ul>
+</li>
+<li>建立 TCP 连接</li>
+<li>发送 HTTP 请求<ul>
+<li>请求行、请求头、请求体</li>
+<li>如有对应的 Cookie ，会携带，用于持久化登录态</li>
+</ul>
+</li>
+<li>等到服务端 HTTP 响应<ul>
+<li>响应行、响应头、响应体</li>
+</ul>
+</li>
+<li>断开连接/重定向<ul>
+<li>如果 HTTP 状态码为 301 或 302 ，浏览器需要重定向到另一个地址访问</li>
+</ul>
+</li>
+</ol>
+<h2 id="从输入-URL-到页面展示完整"><a href="#从输入-URL-到页面展示完整" class="headerlink" title="从输入 URL 到页面展示完整"></a>从输入 URL 到页面展示完整</h2><h3 id="导航阶段"><a href="#导航阶段" class="headerlink" title="导航阶段"></a>导航阶段</h3><p>流程示意图：</p>
+<p><img src="http://i2.tiimg.com/706472/a72269e27885564d.png" alt="Markdown"></p>
+<ol>
+<li><p>用户输入请求信息</p>
+</li>
+<li><p>网络进程发起 URL 请求</p>
+</li>
+<li><p>服务器响应之后，浏览器进程开始准备渲染进程</p>
+</li>
+</ol>
+<ul>
+<li>如果 HTTP 响应码是 301 或者是 302 ，浏览器会有一个重定向的过程</li>
+<li>响应头中的 Content-Type 决定浏览器如何处理响应内容，影响着后续流程，如果是 HTML 页面，那么 Content-Type 的值应该是 text/html</li>
+<li>每打开一个页面，浏览器都会准备一个新的进程，有一种情况例外，就是新打开的页面和之前的页面属于<strong>同一站点</strong>时，这时候会复用前一个进程</li>
+</ul>
+<ol>
+<li><p>渲染进程准备好之后，就会通知浏览器进程已经做好展示页面状态的准备，这个过程称为“<strong>提交文档</strong>”</p>
+</li>
+<li><p>浏览器进程接收到提交文档的消息后，便会移除旧的文档，同时通知渲染进程文档已提交，渲染进程进入<strong>解析页面</strong>阶段</p>
+<p><strong>这个过程就叫做 “导航”</strong></p>
+</li>
+</ol>
+<h3 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h3><p><img src="http://i2.tiimg.com/706472/d2877702697009e6.png" alt="Markdown"></p>
+<p>按照渲染的时间顺序，渲染流水线可以分为如下几个子阶段：</p>
+<p>构建 DOM 树 =&gt; 样式计算 =&gt; 布局阶段 =&gt; 分层 =&gt; 绘制 =&gt; 分块 =&gt; 光栅化 =&gt; 合成</p>
+<p>每个子阶段都可以看成是一个函数，接收输入参数，进行本阶段的处理，然后输出相应的处理结果给下一个子阶段。多个子阶段构成一条渲染流水线。</p>
+<h4 id="1-构建-DOM-树"><a href="#1-构建-DOM-树" class="headerlink" title="1. 构建 DOM 树"></a>1. 构建 DOM 树</h4><p>将简单的 HTML 代码，经由解析器解析，最终转换为一个树状结构，包含节点和内容，方便接下来流程的处理。</p>
+<h4 id="2-样式计算"><a href="#2-样式计算" class="headerlink" title="2. 样式计算"></a>2. 样式计算</h4><ul>
+<li><p>为了将 CSS 文件转换成浏览器能够理解的结构，先要进行一步<strong>转换</strong>的操作，解析 CSS 文件，输出 styleSheets</p>
+</li>
+<li><p>接下来是将<strong>CSS 的属性值标准化</strong></p>
+</li>
+<li>然后根据 CSS 继承和层叠的规则，计算每个 DOM 节点的样式</li>
+</ul>
+<h4 id="3-布局阶段"><a href="#3-布局阶段" class="headerlink" title="3. 布局阶段"></a>3. 布局阶段</h4><p>计算 DOM 树中<strong>可见节点</strong>的几何位置的过程，就叫做布局。</p>
+<ul>
+<li>创建布局树，构建一棵只包含可见元素的布局树</li>
+<li>布局计算，计算 DOM 树节点的坐标位置</li>
+</ul>
+<h4 id="4-分层"><a href="#4-分层" class="headerlink" title="4. 分层"></a>4. 分层</h4><p>为了完成页面很多复杂的效果，渲染引擎会为一些特定的节点生成对应的图层，最终形成一棵图层树。满足以下两点中的任意一点都会形成一个对应的图层：</p>
+<ul>
+<li>拥有层叠上下文属性（定位属性、透明度定义、CSS 滤镜）</li>
+<li>需要裁剪的地方（内容溢出容器，就会发生裁剪）</li>
+</ul>
+<h4 id="5-图层绘制"><a href="#5-图层绘制" class="headerlink" title="5. 图层绘制"></a>5. 图层绘制</h4><p>图层的绘制会被分解成一个个绘制指令，形成绘制列表</p>
+<h4 id="6-栅格化（raster）操作"><a href="#6-栅格化（raster）操作" class="headerlink" title="6. 栅格化（raster）操作"></a>6. 栅格化（raster）操作</h4><p>当图层的绘制列表准备好之后，渲染线程的主线程会将绘制列表提交（commit）给合成线程。</p>
+<p>合成线程将图层划分为图块，视口附近的图块会被优先转化为位图，生成位图的操作是由栅格化来进行的。栅格化，就是将图块转换为位图。</p>
+<p>渲染引擎维护了一个栅格化的线程池，所有的图块栅格化都是在线程池中进行的。</p>
+<p>一般栅格化线程都会由 GPU 来加速进行，生成的位图会保存在 GPU 的内存中。</p>
+<p><img src="http://i2.tiimg.com/706472/b1c45068aee33d99.png" alt="Markdown"></p>
+<h4 id="7-合成和显示"><a href="#7-合成和显示" class="headerlink" title="7. 合成和显示"></a>7. 合成和显示</h4><p>所有的图块光栅化之后，合成线程会发出一个绘制图块的命令-“DrawQuad”，提交给浏览器进程。</p>
+<p>浏览器进程里有一个叫 viz 的组件，用来接收 DrawQuad 命令，根据这个命令，将页面内容绘制到内存中，最后再显示在屏幕上。</p>
+<p>至此，用户就可以看见最终的页面了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/07/09/拾起笔/" rel="prev" title="拾起笔">
+      <i class="fa fa-chevron-left"></i> 拾起笔
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments" id="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#浏览器架构变迁"><span class="nav-number">1.</span> <span class="nav-text">浏览器架构变迁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#浏览器数据包传输"><span class="nav-number">2.</span> <span class="nav-text">浏览器数据包传输</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个完整的-HTTP-请求过程"><span class="nav-number">2.1.</span> <span class="nav-text">一个完整的 HTTP 请求过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从输入-URL-到页面展示完整"><span class="nav-number">3.</span> <span class="nav-text">从输入 URL 到页面展示完整</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#导航阶段"><span class="nav-number">3.1.</span> <span class="nav-text">导航阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染流程"><span class="nav-number">3.2.</span> <span class="nav-text">渲染流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-构建-DOM-树"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 构建 DOM 树</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-样式计算"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 样式计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-布局阶段"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 布局阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-分层"><span class="nav-number">3.2.4.</span> <span class="nav-text">4. 分层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-图层绘制"><span class="nav-number">3.2.5.</span> <span class="nav-text">5. 图层绘制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-栅格化（raster）操作"><span class="nav-number">3.2.6.</span> <span class="nav-text">6. 栅格化（raster）操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-合成和显示"><span class="nav-number">3.2.7.</span> <span class="nav-text">7. 合成和显示</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="silence_wh"
+      src="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+  <p class="site-author-name" itemprop="name">silence_wh</p>
+  <div class="site-description" itemprop="description">代码还是要用心写的.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Silencewanghui" title="GitHub → https://github.com/Silencewanghui" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/silencewanghui@gmail.com" title="E-Mail → silencewanghui@gmail.com"><i class="fa fa-fw fa-google"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">silence_wh</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://silence-wh.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  function loadComments() {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: {page: {
+            url: "http://silencewh.xin/2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/",
+            identifier: "2019/12/23/浏览器工作原理学习笔记-一-浏览器概览/",
+            title: "浏览器工作原理学习笔记(一)-浏览器概览"
+          }
+        }
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://silence-wh.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  }
+    window.addEventListener('load', loadComments, false);
+</script>
+
+</body>
+</html>
