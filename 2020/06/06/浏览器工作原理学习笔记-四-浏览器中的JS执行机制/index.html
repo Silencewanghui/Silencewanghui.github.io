@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.7.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="但行好事，莫问前程" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://silencewh.xin').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  变量提升JS 引擎在执行一段 JS 代码的时候，流程如下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器工作原理学习笔记（四）-浏览器中的JS执行机制">
+<meta property="og:url" content="http://silencewh.xin/2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/index.html">
+<meta property="og:site_name" content="但行好事，莫问前程">
+<meta property="og:description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  变量提升JS 引擎在执行一段 JS 代码的时候，流程如下：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://img.souche.com/f2e/18b7ef1f7763f46f192e34b23837d7ce.jpg">
+<meta property="og:image" content="http://img.souche.com/f2e/72ab6a43fac9dad1372b17d42a257d97.jpg">
+<meta property="og:updated_time" content="2020-06-05T10:38:20.217Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器工作原理学习笔记（四）-浏览器中的JS执行机制">
+<meta name="twitter:description" content="本系列为极客时间上的《浏览器工作原理与实践》专栏的学习笔记  变量提升JS 引擎在执行一段 JS 代码的时候，流程如下：">
+<meta name="twitter:image" content="http://img.souche.com/f2e/18b7ef1f7763f46f192e34b23837d7ce.jpg">
+
+<link rel="canonical" href="http://silencewh.xin/2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>浏览器工作原理学习笔记（四）-浏览器中的JS执行机制 | 但行好事，莫问前程</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117879177-4"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-117879177-4');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">但行好事，莫问前程</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Web Developer</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://silencewh.xin/2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+      <meta itemprop="name" content="silence_wh">
+      <meta itemprop="description" content="代码还是要用心写的.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="但行好事，莫问前程">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          浏览器工作原理学习笔记（四）-浏览器中的JS执行机制
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-05 18:37:07" itemprop="dateCreated datePublished" datetime="2020-06-05T18:37:07Z">2020-06-05</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/#comments" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本系列为极客时间上的<a href="https://time.geekbang.org/column/intro/216" target="_blank" rel="noopener">《浏览器工作原理与实践》</a>专栏的学习笔记</p>
+</blockquote>
+<h2 id="变量提升"><a href="#变量提升" class="headerlink" title="变量提升"></a>变量提升</h2><p>JS 引擎在执行一段 JS 代码的时候，流程如下：<br><img src="http://img.souche.com/f2e/18b7ef1f7763f46f192e34b23837d7ce.jpg" alt="Markdown"></p>
+<a id="more"></a>
+<p>在编译阶段，主要做了以下这些事情：</p>
+<ul>
+<li>产生可执行代码和执行上下文</li>
+<li>执行上下文包含：变量环境和词法环境，变量环境里面保存着该段代码需要的变量和函数</li>
+<li>遇到声明语句，将对应的变量或函数保存在执行上下文的变量环境中，并赋予变量默认值，函数的值为指针，指向堆中保存函数体的地址</li>
+<li>将可执行代码编译成字节码</li>
+</ul>
+<p>编译阶段在遇到同名变量或函数的时候，后者会覆盖前者。<br>执行阶段就是按顺序，一行一行执行可执行代码。</p>
+<h2 id="调用栈"><a href="#调用栈" class="headerlink" title="调用栈"></a>调用栈</h2><p>调用栈是 JS 引擎用来管理执行上下文的数据结构。<br>在一个页面中，会存在一个全局上下文和若干个函数执行上下文。在执行代码的过程中，遇到函数调用，会先对函数代码进行编译，形成函数执行上下文，并将其压入栈中。待函数执行完成之后，会有一个出栈的操作，用来销毁掉当前的函数执行上下文。</p>
+<h3 id="栈溢出"><a href="#栈溢出" class="headerlink" title="栈溢出"></a>栈溢出</h3><p>调用栈是有容量大小的，当入栈的执行上下文超过一定数量时，JS 引擎就会报错，这种错误就是栈溢出。在一些函数递归调用的场景中，如果没有设置合理的退出条件，就会发生栈溢出的错误。可以通过使用加入定时器的方法，来把当前任务拆分成许多小任务，来解决这种问题。</p>
+<h2 id="块级作用域"><a href="#块级作用域" class="headerlink" title="块级作用域"></a>块级作用域</h2><p>在 ES6 之前，JS 的作用域只有两种：全局作用域和函数作用域。由于没有块级作用域，JS 引擎在编译代码的时候，会执行变量提升，由此带来的问题是： - 变量覆盖 - 变量没有被及时销毁<br>ES6 通过引入 let 和 const 关键字，支持了块级作用域，同时还向下兼容着变量提升的特性。在编译阶段，let 和 const 关键字声明的变量会被存放在执行上下文中的词法环境里，而且块与块之间互不影响（是一个栈的结构）。<br>值得注意的是，在块级作用域中，在 let 或 const 声明语句之前去使用它们定义的变量，会报错，因为这些变量即使存放在词法环境里，但是并没有被初始化，也就形成了所谓的”暂时性死区“。所以一个比较好的习惯时，如果逻辑不是很复杂，建议将变量声明都放在最前面。</p>
+<h2 id="作用域链和闭包"><a href="#作用域链和闭包" class="headerlink" title="作用域链和闭包"></a>作用域链和闭包</h2><p>JS 引擎在执行过程中，为了查找某个变量的值，是依照作用域链来查找的。作用域链的形成由词法作用域所决定，后者是由代码的书写结构所决定的，也就是说，词法作用域是静态的作用域。<br>在每个执行上下文的变量环境中，都存在一个指向外部执行上下文的引用，称为 outer。在查找变量的过程中，outer 起到了路径引导作用。<br>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function bar() &#123;</span><br><span class="line">    console.log(myName)</span><br><span class="line">&#125;</span><br><span class="line">function foo() &#123;</span><br><span class="line">    var myName = &quot;极客邦&quot;</span><br><span class="line">    bar()</span><br><span class="line">&#125;</span><br><span class="line">var myName = &quot;极客时间&quot;</span><br><span class="line">foo()</span><br></pre></td></tr></table></figure>
+<p>执行 bar 函数时的调用栈：<br><img src="http://img.souche.com/f2e/72ab6a43fac9dad1372b17d42a257d97.jpg" alt="Markdown"></p>
+<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><p>闭包的形成：一个函数最终返回了一个内部函数，并且该内部函数引用到了外部函数里面的变量。即使外部函数执行完之后被销毁了，但是被内部函数引用到的变量保存下来了，存在的结构就称为“闭包”，可以理解为是内部函数的“专属背包”。<br>在之后的内部函数执行过程中，查找变量的作用链中就会包含闭包这个节点。</p>
+<h2 id="JS-中的-this"><a href="#JS-中的-this" class="headerlink" title="JS 中的 this"></a>JS 中的 this</h2><p>首先需要明确的是 this 保存在执行上下文中。<br>JS 中存在三种执行上下文：全局执行上下文、函数执行上下文、eval 执行上下文。eval 不经常用，可以忽略，所以只需要关注在全局和函数执行上下文中，this 指向何处就好了。</p>
+<ol>
+<li>全局执行上下文的 this 指向 window （浏览器环境，非严格模式）。严格模式下指向的是 undefined。</li>
+<li>函数执行上下文的 this 指向<ul>
+<li>默认指向，指向 window （非严格模式），严格模式下指向 undefined</li>
+<li>作为对象的方法被执行，指向该对象</li>
+<li>作为构造函数被执行，指向新 new 出来的对象</li>
+<li>使用 call/apply/bind 方法时，指向指定的参数</li>
+</ul>
+</li>
+</ol>
+<h3 id="this-的设计缺陷以及应对方案"><a href="#this-的设计缺陷以及应对方案" class="headerlink" title="this 的设计缺陷以及应对方案"></a>this 的设计缺陷以及应对方案</h3><ol>
+<li>嵌套函数中的 this 不会从外部继承<blockquote>
+<p>解决方案：<br>将外部函数的 this 传入给内部函数；<br>使用箭头函数；</p>
+</blockquote>
+</li>
+<li>普通函数中的 this 默认指向全局对象<blockquote>
+<p>解决方案：<br>通过 call/apply/bind 函数调用，避免打破数据的边界；<br>设置严格模式，将 bug 的出现时机前置；</p>
+</blockquote>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/26/Vue插件开发小记/" rel="prev" title="Vue插件开发小记">
+      <i class="fa fa-chevron-left"></i> Vue插件开发小记
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments" id="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#变量提升"><span class="nav-number">1.</span> <span class="nav-text">变量提升</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调用栈"><span class="nav-number">2.</span> <span class="nav-text">调用栈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#栈溢出"><span class="nav-number">2.1.</span> <span class="nav-text">栈溢出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#块级作用域"><span class="nav-number">3.</span> <span class="nav-text">块级作用域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#作用域链和闭包"><span class="nav-number">4.</span> <span class="nav-text">作用域链和闭包</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包"><span class="nav-number">4.1.</span> <span class="nav-text">闭包</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JS-中的-this"><span class="nav-number">5.</span> <span class="nav-text">JS 中的 this</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#this-的设计缺陷以及应对方案"><span class="nav-number">5.1.</span> <span class="nav-text">this 的设计缺陷以及应对方案</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="silence_wh"
+      src="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+  <p class="site-author-name" itemprop="name">silence_wh</p>
+  <div class="site-description" itemprop="description">代码还是要用心写的.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Silencewanghui" title="GitHub → https://github.com/Silencewanghui" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/silencewanghui@gmail.com" title="E-Mail → silencewanghui@gmail.com"><i class="fa fa-fw fa-google"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">silence_wh</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://silence-wh.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  function loadComments() {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: {page: {
+            url: "http://silencewh.xin/2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/",
+            identifier: "2020/06/06/浏览器工作原理学习笔记-四-浏览器中的JS执行机制/",
+            title: "浏览器工作原理学习笔记（四）-浏览器中的JS执行机制"
+          }
+        }
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://silence-wh.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  }
+    window.addEventListener('load', loadComments, false);
+</script>
+
+</body>
+</html>
