@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.7.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="但行好事，莫问前程" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://silencewh.xin').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="Chrome DevTools 中的网络面板网络面板中单个请求的时间线：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器工作原理学习笔记(五)-浏览器中的页面">
+<meta property="og:url" content="http://silencewh.xin/2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/index.html">
+<meta property="og:site_name" content="但行好事，莫问前程">
+<meta property="og:description" content="Chrome DevTools 中的网络面板网络面板中单个请求的时间线：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://img.souche.com/f2e/c6b9c0efb6625848c0adbae1e8842531.jpg">
+<meta property="og:image" content="http://img.souche.com/f2e/e8f016ce97c5822ecd161e2934372ddb.jpg">
+<meta property="og:image" content="http://img.souche.com/f2e/77028c737c51f664d85d91727b413a3b.jpg">
+<meta property="og:updated_time" content="2020-07-02T08:25:13.946Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器工作原理学习笔记(五)-浏览器中的页面">
+<meta name="twitter:description" content="Chrome DevTools 中的网络面板网络面板中单个请求的时间线：">
+<meta name="twitter:image" content="http://img.souche.com/f2e/c6b9c0efb6625848c0adbae1e8842531.jpg">
+
+<link rel="canonical" href="http://silencewh.xin/2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>浏览器工作原理学习笔记(五)-浏览器中的页面 | 但行好事，莫问前程</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117879177-4"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-117879177-4');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">但行好事，莫问前程</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Web Developer</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://silencewh.xin/2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+      <meta itemprop="name" content="silence_wh">
+      <meta itemprop="description" content="代码还是要用心写的.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="但行好事，莫问前程">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          浏览器工作原理学习笔记(五)-浏览器中的页面
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-07-02 16:24:46" itemprop="dateCreated datePublished" datetime="2020-07-02T16:24:46Z">2020-07-02</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/#comments" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Chrome-DevTools-中的网络面板"><a href="#Chrome-DevTools-中的网络面板" class="headerlink" title="Chrome DevTools 中的网络面板"></a>Chrome DevTools 中的网络面板</h2><p>网络面板中单个请求的时间线：<br><img src="http://img.souche.com/f2e/c6b9c0efb6625848c0adbae1e8842531.jpg" alt="Markdown"></p>
+<a id="more"></a>
+<h3 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h3><ol>
+<li>Queueing（排队时间）：<br>浏览器加载资源是有优先级的（优先加载 HTML、CSS、JS），其他的请求要为这些资源加载”让路“。<br>同时，Chrome 为每个域名维护 6 个 TCP 连接，发起 HTTP 请求时，这几个 TCP 连接都处于忙碌状态，就会处于排队状态。</li>
+<li>Stalled<br>在发起连接之前，有一些其他原因导致推迟，这就是 Stalled 时间。</li>
+<li>Initial connection/SSL<br>和服务器建立连接，包括建立 TCP 连接，以及 HTTPS 协议的 SSL 握手时间。</li>
+<li>Request sent<br>将浏览器缓冲区的数据发送出去。（可以忽略不计）</li>
+<li>Waiting (TTFB)<br>第一字节时间，表示从连接发出去到收到服务器响应的第一字节的消耗时间。表现<strong>服务器响应能力。</strong></li>
+<li>Content Download<br>从第一字节之后，到完整接收服务器响应内容所消耗时间。</li>
+</ol>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><ol>
+<li>Queueing（排队时间）过久<br>采用<strong>域名分片技术</strong>（扩充域名）或是升级至 HTTP2 （没有 TCP 连接数的限制了）。</li>
+<li>第一字节时间（TTFB）过久<ul>
+<li>提升服务器的处理速度</li>
+<li>采用 CDN 解决网络延迟</li>
+<li>优化请求头</li>
+</ul>
+</li>
+<li>Content Download 过久<br>减少单个请求的内容大小。</li>
+</ol>
+<h2 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h2><p>渲染流程图（侧重在构建 DOM 树阶段）如下：<br><img src="http://img.souche.com/f2e/e8f016ce97c5822ecd161e2934372ddb.jpg" alt="Markdown"></p>
+<h3 id="DOM-树的构建"><a href="#DOM-树的构建" class="headerlink" title="DOM 树的构建"></a>DOM 树的构建</h3><p>通过网络进程获取到的 HTML 字节流，持续不断地输送给渲染进程的 HTML 解析器：<br><img src="http://img.souche.com/f2e/77028c737c51f664d85d91727b413a3b.jpg" alt="Markdown"></p>
+<ul>
+<li>分词，同时维护一个 Token 的栈，用来辅助 DOM 树的生成</li>
+<li>构建 DOM 树</li>
+</ul>
+<h4 id="影响-DOM-构建的因素"><a href="#影响-DOM-构建的因素" class="headerlink" title="影响 DOM 构建的因素"></a>影响 DOM 构建的因素</h4><ol>
+<li>遇到内联的 script 标签，需要停止 DOM 的构建，等到 JS 执行完再继续；遇到需要加载外部 script 的文件，需要先下载，再执行；</li>
+<li>如果页面中有引入外部的 CSS 文件，同时又引入了外部的 JS 的文件，需要先下载 CSS 文件，再构建 CSSOM，然后才能执行 JS 文件；</li>
+<li>Chrome 会在 HTML 数据响应之后，开启一个预解析线程，用来下载 HTML 文件中的 CSS 和 JS 文件；</li>
+</ol>
+<h4 id="页面白屏时间"><a href="#页面白屏时间" class="headerlink" title="页面白屏时间"></a>页面白屏时间</h4><ol>
+<li>输入 URL 到网络进程响应内容<blockquote>
+<p>这一阶段主要受网络和服务器的影响较大</p>
+</blockquote>
+</li>
+<li>JS 执行阻塞 DOM 的构建<blockquote>
+<p>这一阶段主要是因为 CSS 和 JS 文件的下载，以及 JS 文件的执行</p>
+</blockquote>
+</li>
+</ol>
+<h4 id="如何减少页面白屏时间（第二个）"><a href="#如何减少页面白屏时间（第二个）" class="headerlink" title="如何减少页面白屏时间（第二个）"></a>如何减少页面白屏时间（第二个）</h4><ul>
+<li>将 CSS 和 JS 内联，排除文件的下载时间干扰。但是这样的做法只适用于部分场景，因为内联会导致 HTML 的体积变大，增加第一个白屏时间</li>
+<li>通过 webpack 打包工具，减小 CSS 和 JS 文件体积大小，主要做法是压缩和去除注释</li>
+<li>将首屏不需要的 JS 文件，标记上 async 或 defer，使他们不阻塞 DOM 的构建</li>
+<li>将 CSS 文件按照不同的场景进行拆分，避免首次全量加载</li>
+</ul>
+<h3 id="渲染引擎的分层和合成机制"><a href="#渲染引擎的分层和合成机制" class="headerlink" title="渲染引擎的分层和合成机制"></a>渲染引擎的分层和合成机制</h3><p>为了提升渲染的效率，浏览器中的页面会分成很多个”层“，类似于 PS 中的图层。合成操作是将这些图层合并到一起。<br>分层是在布局树构建之后，渲染引擎会根据布局树的特点将其转换为层树，层树是渲染流水线后续流程的基础。<br>合成操作是在合成线程中进行的，不会影响到主线程。所以有时候主线程卡住了，但是 CSS 动画依然能够执行。</p>
+<h4 id="利用分层技术优化代码"><a href="#利用分层技术优化代码" class="headerlink" title="利用分层技术优化代码"></a>利用分层技术优化代码</h4><p>如果用 JS 来实现动画的话，会牵扯到整个渲染流程，效率十分低下。可以利用分层机制来优化动画的实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.box &#123;</span><br><span class="line">	will-change: transform, opacity;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 will-change 来提前申明会对该元素做哪些操作。渲染引擎会将该元素单独实现一层，等变换发生时，通过合成线程去处理变换，没有涉及到主线程，大大提升了渲染效率。</p>
+<h2 id="如何系统的优化页面"><a href="#如何系统的优化页面" class="headerlink" title="如何系统的优化页面"></a>如何系统的优化页面</h2><p>主要是优化处在<strong>加载阶段</strong>和<strong>交互阶段</strong>的页面。</p>
+<h3 id="加载阶段"><a href="#加载阶段" class="headerlink" title="加载阶段"></a>加载阶段</h3><ul>
+<li>减少关键资源的个数</li>
+<li>缩小关键资源的体积<blockquote>
+<p>关键资源指的是影响首屏加载的各类资源（HTML、CSS 文件）。<br>通过以上两个方法，来减少关键资源的 RTT 时间。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="交互阶段"><a href="#交互阶段" class="headerlink" title="交互阶段"></a>交互阶段</h3><ul>
+<li>减少 JS 的执行时间<blockquote>
+<p>通过函数任务的切分，让脚本不要一次霸占主线程太长时间</p>
+</blockquote>
+</li>
+<li>避免强制同步布局和布局抖动<blockquote>
+<p>避免将计算样式和布局操作提前到当前任务当中，主要是由修改完 DOM 之后立即查询 DOM 属性导致的。布局抖动指的是，在一段 JS 代码执行过程中，反复执行布局操作。不过目前使用现代的前端框架（React、Vue 等），已经避免了这样的问题。</p>
+</blockquote>
+</li>
+<li>合理利用 CSS 合成动画<blockquote>
+<p>因为合成动画是在合成线程上执行的，不会占用主线程，而且合成线程合成动画的效率很高。</p>
+</blockquote>
+</li>
+<li>避免频繁的垃圾回收<blockquote>
+<p>减少临时对象的创建，避免小颗粒对象的产生。</p>
+</blockquote>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/02/浏览器工作原理学习笔记-六-浏览器中的网络/" rel="prev" title="浏览器工作原理学习笔记(六)-浏览器中的网络">
+      <i class="fa fa-chevron-left"></i> 浏览器工作原理学习笔记(六)-浏览器中的网络
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments" id="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Chrome-DevTools-中的网络面板"><span class="nav-number">1.</span> <span class="nav-text">Chrome DevTools 中的网络面板</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解释"><span class="nav-number">1.1.</span> <span class="nav-text">解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化"><span class="nav-number">1.2.</span> <span class="nav-text">优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#渲染流程"><span class="nav-number">2.</span> <span class="nav-text">渲染流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-树的构建"><span class="nav-number">2.1.</span> <span class="nav-text">DOM 树的构建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#影响-DOM-构建的因素"><span class="nav-number">2.1.1.</span> <span class="nav-text">影响 DOM 构建的因素</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#页面白屏时间"><span class="nav-number">2.1.2.</span> <span class="nav-text">页面白屏时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何减少页面白屏时间（第二个）"><span class="nav-number">2.1.3.</span> <span class="nav-text">如何减少页面白屏时间（第二个）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染引擎的分层和合成机制"><span class="nav-number">2.2.</span> <span class="nav-text">渲染引擎的分层和合成机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#利用分层技术优化代码"><span class="nav-number">2.2.1.</span> <span class="nav-text">利用分层技术优化代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何系统的优化页面"><span class="nav-number">3.</span> <span class="nav-text">如何系统的优化页面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#加载阶段"><span class="nav-number">3.1.</span> <span class="nav-text">加载阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交互阶段"><span class="nav-number">3.2.</span> <span class="nav-text">交互阶段</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="silence_wh"
+      src="http://img.souche.com/f2e/71b2b16d1feb09c8fb3cbf3add382e53.jpeg">
+  <p class="site-author-name" itemprop="name">silence_wh</p>
+  <div class="site-description" itemprop="description">代码还是要用心写的.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Silencewanghui" title="GitHub → https://github.com/Silencewanghui" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/silencewanghui@gmail.com" title="E-Mail → silencewanghui@gmail.com"><i class="fa fa-fw fa-google"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">silence_wh</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://silence-wh.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  function loadComments() {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: {page: {
+            url: "http://silencewh.xin/2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/",
+            identifier: "2020/07/03/浏览器工作原理学习笔记-五-浏览器中的页面/",
+            title: "浏览器工作原理学习笔记(五)-浏览器中的页面"
+          }
+        }
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://silence-wh.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  }
+    window.addEventListener('load', loadComments, false);
+</script>
+
+</body>
+</html>
